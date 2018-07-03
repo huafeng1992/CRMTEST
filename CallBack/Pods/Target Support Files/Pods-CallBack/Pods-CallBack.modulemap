@@ -1,0 +1,6 @@
+framework module Pods_CallBack {
+  umbrella header "Pods-CallBack-umbrella.h"
+
+  export *
+  module * { export * }
+}
