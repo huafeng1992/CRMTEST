@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		12BBB1D84304E21E79598D24 /* Pods_CallBack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 732CC2721E231D51F67030CD /* Pods_CallBack.framework */; };
+		DC50EAE420EBF0C200F739AC /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = ECD1010A20E9F53500CE61A7 /* Info.plist */; };
+		DC50EAE620EBFCDA00F739AC /* MediaUtilDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC50EAE520EBFCDA00F739AC /* MediaUtilDelegate.swift */; };
+		DC50EAE820EC06BC00F739AC /* Slider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC50EAE720EC06BC00F739AC /* Slider.swift */; };
 		EC1610E920EB518400797503 /* Commont.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1610E820EB518400797503 /* Commont.swift */; };
 		EC1610EB20EB785800797503 /* AVPlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1610EA20EB785800797503 /* AVPlayerManager.swift */; };
 		EC5467EC20EA2AEA0013D2B7 /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC5467EB20EA2AEA0013D2B7 /* TableViewController.swift */; };
@@ -46,6 +49,8 @@
 		0A082A31C89B7E2F3DB03EEC /* Pods-CallBack.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CallBack.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CallBack/Pods-CallBack.debug.xcconfig"; sourceTree = "<group>"; };
 		4033BE9EE87A53ACA5550C6C /* Pods-CallBack.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CallBack.release.xcconfig"; path = "Pods/Target Support Files/Pods-CallBack/Pods-CallBack.release.xcconfig"; sourceTree = "<group>"; };
 		732CC2721E231D51F67030CD /* Pods_CallBack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CallBack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC50EAE520EBFCDA00F739AC /* MediaUtilDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaUtilDelegate.swift; sourceTree = "<group>"; };
+		DC50EAE720EC06BC00F739AC /* Slider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Slider.swift; sourceTree = "<group>"; };
 		EC1610E820EB518400797503 /* Commont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commont.swift; sourceTree = "<group>"; };
 		EC1610EA20EB785800797503 /* AVPlayerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AVPlayerManager.swift; sourceTree = "<group>"; };
 		EC5467EB20EA2AEA0013D2B7 /* TableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewController.swift; sourceTree = "<group>"; };
@@ -145,9 +150,11 @@
 				ECB40E1220EB0FE200F61482 /* Cell.swift */,
 				ECB40E1420EB144300F61482 /* PlayerCell.swift */,
 				ECB40E1620EB16AA00F61482 /* PlayerView.swift */,
+				DC50EAE720EC06BC00F739AC /* Slider.swift */,
 				ECB40E1020EB0C6300F61482 /* CallPhone.swift */,
 				EC1610E820EB518400797503 /* Commont.swift */,
 				EC1610EA20EB785800797503 /* AVPlayerManager.swift */,
+				DC50EAE520EBFCDA00F739AC /* MediaUtilDelegate.swift */,
 				ECD1010220E9F53300CE61A7 /* Main.storyboard */,
 				ECD1010520E9F53500CE61A7 /* Assets.xcassets */,
 				ECD1010720E9F53500CE61A7 /* LaunchScreen.storyboard */,
@@ -281,6 +288,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC50EAE420EBF0C200F739AC /* Info.plist in Resources */,
 				ECD1010920E9F53500CE61A7 /* LaunchScreen.storyboard in Resources */,
 				ECD1010620E9F53500CE61A7 /* Assets.xcassets in Resources */,
 				ECD1010420E9F53300CE61A7 /* Main.storyboard in Resources */,
@@ -363,10 +371,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				ECB40E1520EB144300F61482 /* PlayerCell.swift in Sources */,
+				DC50EAE820EC06BC00F739AC /* Slider.swift in Sources */,
 				ECB40E1120EB0C6300F61482 /* CallPhone.swift in Sources */,
 				ECB40E1720EB16AA00F61482 /* PlayerView.swift in Sources */,
 				ECD1010120E9F53300CE61A7 /* ViewController.swift in Sources */,
 				ECB40E1320EB0FE200F61482 /* Cell.swift in Sources */,
+				DC50EAE620EBFCDA00F739AC /* MediaUtilDelegate.swift in Sources */,
 				EC1610E920EB518400797503 /* Commont.swift in Sources */,
 				EC5467EC20EA2AEA0013D2B7 /* TableViewController.swift in Sources */,
 				EC1610EB20EB785800797503 /* AVPlayerManager.swift in Sources */,

@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-class PlayerView: UIView {
+class PlayerView: UIView, MediaUtilDelegate {
     
     enum PlayStatus {
         case start
@@ -23,6 +23,10 @@ class PlayerView: UIView {
     var loading: Bool = false
     
     var playerManager: AVPlayerManager!
+    
+    var totalTime: Double?
+    
+    var sliderIndex: Float?
     
     var playLoadingImageView: UIImageView = {
         let imageview = UIImageView()
@@ -38,8 +42,8 @@ class PlayerView: UIView {
         return playButton
     }()
     
-    var slider: UISlider = {
-        let slider = UISlider.init(frame: .zero)
+    var slider: Slider = {
+        let slider = Slider.init(frame: .zero)
         slider.minimumValue = 0
         slider.maximumValue = 1
         slider.value = 0
@@ -50,7 +54,7 @@ class PlayerView: UIView {
     
     var playTimeLab: UILabel = {
         let playtimeLab = UILabel()
-        playtimeLab.text = "00:54"
+        playtimeLab.text = "00:00"
         playtimeLab.textColor = CommonColor("007AFF")
         playtimeLab.font = UIFont.systemFont(ofSize: 10)
         return playtimeLab
@@ -58,7 +62,7 @@ class PlayerView: UIView {
     
     var allTimeLab: UILabel = {
         let allTimeLab = UILabel()
-        allTimeLab.text = "00:54"
+        allTimeLab.text = "--:--"
         allTimeLab.textColor = CommonColor("007AFF")
         allTimeLab.font = UIFont.systemFont(ofSize: 10)
         return allTimeLab
@@ -77,46 +81,72 @@ class PlayerView: UIView {
         addAllView()
         playButton.addTarget(self, action: #selector(playButtonAction(_:)), for: .touchUpInside)
         slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
-
+        slider.addTarget(self, action: #selector(sliderTouchDragInside(_:)), for: .touchDragInside)
     }
     
     @objc func playButtonAction(_ btn: UIButton) {
         
-        if !btn.isSelected && loading == true {
-            loading = false
-            removeImageAnumation()
-        }
-        
-        if !btn.isSelected && loading == false {
-            loading = true
-            startImageAnumation()
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5) {
-                btn.isSelected = !btn.isSelected
-                self.loading = false
-                self.removeImageAnumation()
-            }
-        }
-        
-        if btn.isSelected {
+//        if !btn.isSelected && loading == true {
+//            loading = false
+//            removeImageAnumation()
+//        }
+//
+//        if !btn.isSelected && loading == false {
+//            loading = true
+//            startImageAnumation()
+//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5) {
+//                btn.isSelected = !btn.isSelected
+//                self.loading = false
+//                self.removeImageAnumation()
+//            }
+//        }
+//
+//        if btn.isSelected {
             btn.isSelected = !btn.isSelected
-            // 处理关闭/暂停
-            
+//            // 处理关闭/暂停
+//
             if btn.isSelected {
-                playerManager.play(URL.init(string: mp3Path)!)
+                let url = URL(string: mp3Path)
+                playerManager.playAndBackCMTime(url!) { (currentTime, totalTime, cmtime) in
+                    self.playTimeLab.text = self.timeInHHMMSS(currentTime)
+                    self.allTimeLab.text = self.timeInHHMMSS(totalTime)
+                    
+                    self.sliderIndex = Float(currentTime/totalTime)
+                    self.slider.setValue(self.sliderIndex!, animated: true)
+                    self.totalTime = totalTime
+                }
             } else {
                 playerManager.stop()
+                self.totalTime = nil
+                self.slider.setValue(0, animated: false)
+            }
+//        }
+    }
+    
+    
+    @objc func sliderTouchDragInside(_ sender: UISlider) {
+        print("开始滑动")
+        if self.sliderIndex != nil {
+            if self.sliderIndex != sender.value {
+                self.playerManager.pause()
             }
         }
-        
-        
-        
         
     }
     
     @objc func sliderValueChanged(_ sender: UISlider) {
-        
-        if sender == self.slider {
-            print(sender.value)
+    
+        if let playerItem = playerManager.player?.currentItem, let total = totalTime  {
+            
+            switch playerItem.status {
+            case .readyToPlay:
+//                playerManager.player?.pause()
+                playerManager.player?.seek(to: playerManager.getCMTime(total * Double(slider.value)), completionHandler: { (finished) in
+                        self.playerManager.goOn()
+                })
+            default:
+                break
+            }
         }
     }
     
