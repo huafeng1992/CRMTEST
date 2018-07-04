@@ -17,12 +17,11 @@ class PlayerView: UIView, MediaUtilDelegate {
         case pause
     }
     
-    var url: URL? 
-    
-    /// 记录加载状态
-    var loading: Bool = false
-    
     var playerManager: AVPlayerManager!
+    
+    var url: URL? 
+
+    var sliderIndex: Float?
     
     var totalTime: Double? = 0 {
         didSet {
@@ -31,9 +30,7 @@ class PlayerView: UIView, MediaUtilDelegate {
             }
         }
     }
-    
-    var sliderIndex: Float?
-    
+
     var playLoadingImageView: UIImageView = {
         let imageview = UIImageView()
         imageview.image = UIImage.init(named: "bg_roll_startImage")
@@ -127,14 +124,14 @@ class PlayerView: UIView, MediaUtilDelegate {
         btn.isSelected = !btn.isSelected
         if btn.isSelected {
             self.slider.isUserInteractionEnabled = true
-            playerManager.playAndBackCMTime(url!) { (currentTime, cmtime) in
+            playerManager.playAndBackCMTime(url!) { (currentTime, realTotalTime, cmtime) in
                 if cmtime.value == 0 {
                     self.startImageAnumation()
                 } else {
                     self.removeImageAnumation()
                 }
                 self.playTimeLab.text = self.timeInHHMMSS(currentTime)
-                self.sliderIndex = Float(currentTime/self.totalTime!)
+                self.sliderIndex = Float(currentTime/realTotalTime)
                 self.slider.setValue(self.sliderIndex!, animated: true)
             }
         } else {
@@ -156,13 +153,10 @@ extension PlayerView {
     
     @objc func sliderValueChanged(_ sender: UISlider) {
         
-        if let playerItem = playerManager.player?.currentItem, let total = totalTime  {
-            
+        if let playerItem = playerManager.player?.currentItem {
             switch playerItem.status {
             case .readyToPlay:
-                playerManager.player?.seek(to: playerManager.getCMTime(total * Double(slider.value)), completionHandler: { (finished) in
-                    self.playerManager.goOn()
-                })
+                playerManager.seek(progress: Double(slider.value))
             default:
                 break
             }

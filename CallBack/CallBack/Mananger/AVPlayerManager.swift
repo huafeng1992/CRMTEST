@@ -43,16 +43,12 @@ extension AVPlayerManager {
     /// 播放并回调监听时间
     ///
     /// - Parameter url:
-    func playAndBackCMTime(_ url: URL, observer: @escaping (_ currentTime: Double, _ cmtime: CMTime) -> Void) {
+    func playAndBackCMTime(_ url: URL, observer: @escaping (_ currentTime: Double, _ realTotalTime: Double , _ cmtime: CMTime) -> Void) {
         play(url)
-        
         if player != nil {
+
             timeObserver = player!.addPeriodicTimeObserver(forInterval: CMTimeMake(Int64(1.0), Int32(1.0)), queue: DispatchQueue.main, using: { (cmtime) in
-                let current = Double(CMTimeGetSeconds(cmtime))
-                observer(current, cmtime)
-                print(cmtime)
-                
-//                print(CMTimeGetSeconds((self.player?.currentItem?.duration)!))
+                observer(Double(CMTimeGetSeconds(cmtime)), self.getTotalTime(), cmtime)
             })
         }
     }
@@ -82,7 +78,6 @@ extension AVPlayerManager {
     
     func pause() {
         if player != nil {
-            
             player!.pause()
         }
     }
@@ -107,9 +102,25 @@ extension AVPlayerManager {
 }
 
 extension AVPlayerManager {
+
+    func seek(progress: Double) {
+        guard let player = player else {
+            return
+        }
+        let currentTime = getTotalTime() * progress
+        let currentCMTTime = CMTime.init(seconds: currentTime, preferredTimescale: 1)
+        player.seek(to: currentCMTTime, completionHandler: { (finished) in
+            self.goOn()
+        })
+    }
     
-    func getCMTime(_ duration: Double) -> CMTime {
-        let cmtime = CMTime.init(seconds: duration, preferredTimescale: 1)
-        return cmtime
+    func getTotalTime() -> Double {
+        guard let player = player else {
+            return 0
+        }
+        guard let playerItem = player.currentItem else {
+            return 0
+        }
+        return CMTimeGetSeconds(playerItem.duration)
     }
 }
