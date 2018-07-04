@@ -17,14 +17,20 @@ class PlayerView: UIView, MediaUtilDelegate {
         case pause
     }
     
-    var mp3Path = "http://xiaohe-online.oss-cn-beijing.aliyuncs.com/emulation/audios/homework/02DF4E50AF20688B4F0F0464EF625B381528885269.mp3"
+    var url: URL? 
     
     /// 记录加载状态
     var loading: Bool = false
     
     var playerManager: AVPlayerManager!
     
-    var totalTime: Double?
+    var totalTime: Double? = 0 {
+        didSet {
+            if totalTime == nil {
+                totalTime = 0
+            }
+        }
+    }
     
     var sliderIndex: Float?
     
@@ -42,8 +48,8 @@ class PlayerView: UIView, MediaUtilDelegate {
         return playButton
     }()
     
-    var slider: Slider = {
-        let slider = Slider.init(frame: .zero)
+    var slider: UISlider = {
+        let slider = UISlider.init(frame: .zero)
         slider.minimumValue = 0
         slider.maximumValue = 1
         slider.value = 0
@@ -75,82 +81,131 @@ class PlayerView: UIView, MediaUtilDelegate {
     override init(frame: CGRect) {
         super.init(frame: .zero)
         
-        
-        playerManager = AVPlayerManager()
-        
         addAllView()
+        playerManager = AVPlayerManager()
+        playerManager.playcallBackFinished = {
+            self.initialPlayerView()
+        }
+        
         playButton.addTarget(self, action: #selector(playButtonAction(_:)), for: .touchUpInside)
         slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
         slider.addTarget(self, action: #selector(sliderTouchDragInside(_:)), for: .touchDragInside)
+        initialPlayerView()
+    }
+    
+    open func setMedia(url: URL, totalTime: Double) {
+        self.url = url
+        self.totalTime = totalTime
+        self.allTimeLab.text = timeInHHMMSS(totalTime)
+    }
+    
+    open func initialPlayerView() {
+        
+        self.slider.setValue(0, animated: false)
+        self.playTimeLab.text = "00:00"
+        if totalTime != 0 && totalTime != nil {
+            self.allTimeLab.text = timeInHHMMSS(totalTime!)
+        } else {
+            self.allTimeLab.text = "--:--"
+        }
+        removeImageAnumation()
+        self.slider.isUserInteractionEnabled = false
+        self.playerManager.stop()
+        self.playButton.isSelected = false
     }
     
     @objc func playButtonAction(_ btn: UIButton) {
         
-//        if !btn.isSelected && loading == true {
-//            loading = false
-//            removeImageAnumation()
-//        }
-//
-//        if !btn.isSelected && loading == false {
-//            loading = true
-//            startImageAnumation()
-//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5) {
-//                btn.isSelected = !btn.isSelected
-//                self.loading = false
-//                self.removeImageAnumation()
-//            }
-//        }
-//
-//        if btn.isSelected {
-            btn.isSelected = !btn.isSelected
-//            // 处理关闭/暂停
-//
-            if btn.isSelected {
-                let url = URL(string: mp3Path)
-                playerManager.playAndBackCMTime(url!) { (currentTime, totalTime, cmtime) in
-                    self.playTimeLab.text = self.timeInHHMMSS(currentTime)
-                    self.allTimeLab.text = self.timeInHHMMSS(totalTime)
-                    
-                    self.sliderIndex = Float(currentTime/totalTime)
-                    self.slider.setValue(self.sliderIndex!, animated: true)
-                    self.totalTime = totalTime
+        if self.url == nil {
+            return
+        }
+        
+        if totalTime == nil {
+            self.totalTime = 0
+        }
+        
+        btn.isSelected = !btn.isSelected
+        if btn.isSelected {
+            self.slider.isUserInteractionEnabled = true
+            playerManager.playAndBackCMTime(url!) { (currentTime, cmtime) in
+                if cmtime.value == 0 {
+                    self.startImageAnumation()
+                } else {
+                    self.removeImageAnumation()
                 }
-            } else {
-                playerManager.stop()
-                self.totalTime = nil
-                self.slider.setValue(0, animated: false)
+                self.playTimeLab.text = self.timeInHHMMSS(currentTime)
+                self.sliderIndex = Float(currentTime/self.totalTime!)
+                self.slider.setValue(self.sliderIndex!, animated: true)
             }
-//        }
+        } else {
+            self.initialPlayerView()
+        }
     }
-    
+}
+
+//MARK:- UISlider事件处理
+extension PlayerView {
     
     @objc func sliderTouchDragInside(_ sender: UISlider) {
-        print("开始滑动")
         if self.sliderIndex != nil {
             if self.sliderIndex != sender.value {
                 self.playerManager.pause()
             }
         }
-        
     }
     
     @objc func sliderValueChanged(_ sender: UISlider) {
-    
+        
         if let playerItem = playerManager.player?.currentItem, let total = totalTime  {
             
             switch playerItem.status {
             case .readyToPlay:
-//                playerManager.player?.pause()
                 playerManager.player?.seek(to: playerManager.getCMTime(total * Double(slider.value)), completionHandler: { (finished) in
-                        self.playerManager.goOn()
+                    self.playerManager.goOn()
                 })
             default:
                 break
             }
         }
     }
+}
+
+//MARK:- UI
+extension PlayerView {
     
-    func addAllView() {
+    // 开始转动加载
+    func startImageAnumation() {
+        
+        // 判断是否有动画  有则取消
+        let loadingAudio = "loadingAudio"
+        if (playLoadingImageView.layer.animation(forKey: loadingAudio) != nil) {
+            return
+        }
+        
+        playLoadingImageView.isHidden = false
+        let anim = CABasicAnimation(keyPath: "transform.rotation")
+        anim.toValue = 8 * Double.pi
+        anim.duration = 4
+        anim.repeatCount = MAXFLOAT
+        //            anim.isRemovedOnCompletion = true
+        anim.isCumulative = true
+        playLoadingImageView.layer.add(anim, forKey: loadingAudio)
+        UIView.animate(withDuration: 0.4) {
+            //                M_PI
+            self.playLoadingImageView.transform = self.playLoadingImageView.transform.rotated(by: CGFloat(Double.pi))
+        }
+    }
+    
+    // 移除转动加载
+    func removeImageAnumation() {
+        playLoadingImageView.layer.removeAllAnimations()
+        playLoadingImageView.isHidden = true
+    }
+}
+
+extension PlayerView {
+
+    fileprivate func addAllView() {
         
         self.addSubview(playLoadingImageView)
         playLoadingImageView.snp.makeConstraints{
@@ -191,28 +246,4 @@ class PlayerView: UIView, MediaUtilDelegate {
             $0.height.equalTo(playTimeLab)
         }
     }
-}
-
-extension PlayerView {
-    
-    func startImageAnumation() {
-        playLoadingImageView.isHidden = false
-        let anim = CABasicAnimation(keyPath: "transform.rotation")
-        anim.toValue = 8 * Double.pi
-        anim.duration = 4
-        anim.repeatCount = MAXFLOAT
-        //            anim.isRemovedOnCompletion = true
-        anim.isCumulative = true
-        playLoadingImageView.layer.add(anim, forKey: nil)
-        UIView.animate(withDuration: 0.4) {
-            //                M_PI
-            self.playLoadingImageView.transform = self.playLoadingImageView.transform.rotated(by: CGFloat(Double.pi))
-        }
-    }
-    
-    func removeImageAnumation() {
-        playLoadingImageView.layer.removeAllAnimations()
-        playLoadingImageView.isHidden = true
-    }
-    
 }

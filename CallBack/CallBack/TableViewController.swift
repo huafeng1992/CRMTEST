@@ -23,6 +23,7 @@ class TableViewController: UIViewController {
         tableView.dataSource = self
         tableView.register(CRMDetailContactViewCell.self, forCellReuseIdentifier: "cell")
         tableView.register(CRMDetailContactPlayerViewCell.self, forCellReuseIdentifier: "playerCell")
+        tableView.estimatedRowHeight = 200
         view.addSubview(tableView)
     }
 }

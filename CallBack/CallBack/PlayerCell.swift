@@ -70,8 +70,8 @@ class CRMDetailContactPlayerViewCell: UITableViewCell {
             $0.bottom.equalToSuperview().offset(-15)
         }
         self.playerView = playerView
-        
-        
-        
+
+        let url = URL.init(string: "http://xiaohe-online.oss-cn-beijing.aliyuncs.com/emulation/audios/homework/02DF4E50AF20688B4F0F0464EF625B381528885269.mp3")
+        playerView.setMedia(url: url!, totalTime: 300)
     }
 }

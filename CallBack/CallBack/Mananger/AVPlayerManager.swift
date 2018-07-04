@@ -11,23 +11,27 @@ import AVFoundation
 
 class AVPlayerManager: NSObject {
     
+    var audioplayer: AVAudioPlayer?
+    
     var player: AVPlayer?
     
     var url: URL?
     
     var playcallBackFinished: (() -> Void)?
     
-    var timeObserve: Any?
+    var timeObserver: Any?
+    
+    var playItem: AVPlayerItem?
     
     override init() {
         super.init()
         
         NotificationCenter.default.addObserver(self, selector: #selector(playbackFinished), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
-        
     }
     
     /// 播放结束
     @objc func playbackFinished() {
+        stop()
         if playcallBackFinished != nil {
             playcallBackFinished!()
         }
@@ -38,42 +42,21 @@ extension AVPlayerManager {
     
     /// 播放并回调监听时间
     ///
-    /// - Parameter url: <#url description#>
-    func playAndBackCMTime(_ url: URL, observer: @escaping (_ currentTime: Double, _ totalTime: Double, _ cmtime: CMTime) -> Void) {
+    /// - Parameter url:
+    func playAndBackCMTime(_ url: URL, observer: @escaping (_ currentTime: Double, _ cmtime: CMTime) -> Void) {
         play(url)
+        
         if player != nil {
-            timeObserve = player!.addPeriodicTimeObserver(forInterval: CMTimeMake(Int64(1.0), Int32(1.0)), queue: DispatchQueue.main, using: { (cmtime) in
-                
+            timeObserver = player!.addPeriodicTimeObserver(forInterval: CMTimeMake(Int64(1.0), Int32(1.0)), queue: DispatchQueue.main, using: { (cmtime) in
                 let current = Double(CMTimeGetSeconds(cmtime))
-                var total: Double = 0
+                observer(current, cmtime)
                 print(cmtime)
                 
-                // 获取总时长
-                let currentItem = self.player?.currentItem
-                let loadedRanges = currentItem?.seekableTimeRanges
-                if loadedRanges != nil {
-                    if loadedRanges!.count > 0 {
-                        let range: CMTimeRange = loadedRanges![0] as! CMTimeRange
-                        let duration: Float64 = CMTimeGetSeconds(range.start) + CMTimeGetSeconds(range.duration)
-                        total = Double(duration)
-                    }
-                }
-                
-//                NSArray* loadedRanges = currentItem.seekableTimeRanges;
-//                if (loadedRanges.count > 0)
-//                {
-//                    CMTimeRange range = [[loadedRanges objectAtIndex:0] CMTimeRangeValue];
-//                    Float64 duration = CMTimeGetSeconds(range.start) + CMTimeGetSeconds(range.duration);
-//                    // 当前播放总时间
-//                    NSLog(@"duration:%g", duration);
-//                }
-                
-                print("**** total:\(total)")
-                observer(current, total, cmtime)
+//                print(CMTimeGetSeconds((self.player?.currentItem?.duration)!))
             })
         }
     }
-    
+
     func play(_ url: URL) {
         
         if (url.absoluteString.contains(".amr")) {
@@ -83,11 +66,10 @@ extension AVPlayerManager {
 //            player = AVPlayer.init(url: urlpath)
         } else {
             
-            let item = AVPlayerItem.init(url: url)
+            playItem = AVPlayerItem.init(url: url)
             
-            print(CMTimeGetSeconds(item.duration))
-            player = AVPlayer.init(playerItem: item)
-            
+            print(CMTimeGetSeconds(playItem!.duration))
+            player = AVPlayer.init(playerItem: playItem)
         }
         player!.play()
     }
@@ -109,12 +91,17 @@ extension AVPlayerManager {
         
         if player != nil {
             pause()
-            if timeObserve != nil {
-                player!.removeTimeObserver(timeObserve!)
-                timeObserve = nil
-            }
+            removeObserver()
             player!.rate = 0
             player = nil
+        }
+    }
+    
+    //MARK:- 移除播放回调
+    func removeObserver() {
+        if timeObserver != nil {
+            player!.removeTimeObserver(timeObserver!)
+            timeObserver = nil
         }
     }
 }
