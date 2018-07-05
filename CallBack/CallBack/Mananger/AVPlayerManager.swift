@@ -11,17 +11,15 @@ import AVFoundation
 
 class AVPlayerManager: NSObject {
     
-    var audioplayer: AVAudioPlayer?
-    
     var player: AVPlayer?
     
     var url: URL?
     
-    var playcallBackFinished: (() -> Void)?
-    
     var timeObserver: Any?
     
     var playItem: AVPlayerItem?
+    
+    var playcallBackFinished: (() -> Void)?
     
     override init() {
         super.init()
@@ -41,25 +39,24 @@ class AVPlayerManager: NSObject {
 extension AVPlayerManager {
     
     /// 播放并回调监听时间
-    ///
-    /// - Parameter url:
     func playAndBackCMTime(_ url: URL, observer: @escaping (_ currentTime: Double, _ realTotalTime: Double , _ cmtime: CMTime) -> Void) {
         play(url)
         if player != nil {
-
+            
             timeObserver = player!.addPeriodicTimeObserver(forInterval: CMTimeMake(Int64(1.0), Int32(1.0)), queue: DispatchQueue.main, using: { (cmtime) in
                 observer(Double(CMTimeGetSeconds(cmtime)), self.getTotalTime(), cmtime)
             })
         }
     }
-
+    
+    /// 播放URL
     func play(_ url: URL) {
         
         if (url.absoluteString.contains(".amr")) {
             print("播放amr资源")
-//            let wav = VoiceConverter_change.download(inWAV: url.absoluteString)
-//            let urlpath = URL.init(fileURLWithPath: wav!)
-//            player = AVPlayer.init(url: urlpath)
+            //            let wav = VoiceConverter_change.download(inWAV: url.absoluteString)
+            //            let urlpath = URL.init(fileURLWithPath: wav!)
+            //            player = AVPlayer.init(url: urlpath)
         } else {
             
             playItem = AVPlayerItem.init(url: url)
@@ -70,18 +67,21 @@ extension AVPlayerManager {
         player!.play()
     }
     
+    /// 继续播放
     func goOn() {
         if player != nil {
             player!.play()
         }
     }
     
+    /// 暂停播放
     func pause() {
         if player != nil {
             player!.pause()
         }
     }
     
+    /// 停止播放并销毁
     func stop() {
         
         if player != nil {
@@ -102,7 +102,10 @@ extension AVPlayerManager {
 }
 
 extension AVPlayerManager {
-
+    
+    /// 指定播放时间
+    ///
+    /// - Parameter progress: 播放进度
     func seek(progress: Double) {
         guard let player = player else {
             return
@@ -114,6 +117,9 @@ extension AVPlayerManager {
         })
     }
     
+    /// 获取总时间
+    ///
+    /// - Returns: Double
     func getTotalTime() -> Double {
         guard let player = player else {
             return 0
